@@ -14,11 +14,19 @@ const char debugMSG[] = "[@DataCollectorManager]"
 component provides data_collector.DataCollectorManager requires io.Output out,
 	data.json.JSONEncoder encoder, encoding.Encoder:uri codifier, data.mysql.MySQL {
 
+		int number_of_records = 0
+
 	void DataCollectorManager:storeData(byte content[], char id[], DocStream s) {
-		MySQL mysql = new MySQL("localhost", 0, "root", "root", "data_collector")
-		mysql.execute(new char[]("INSERT INTO data (value, uuid) VALUES (\"", codifier.encode(content)
-			,"\", \"", id ,"\");"))
-		mysql.close()
+
+		//if (number_of_records < 200) {
+		if (number_of_records < 1) {
+			MySQL mysql = new MySQL("localhost", 0, "root", "root", "data_collector")
+			mysql.execute(new char[]("INSERT INTO data (value, uuid) VALUES (\"", codifier.encode(content)
+				,"\", \"", id ,"\");"))
+			mysql.close()
+
+			number_of_records++
+		}
 	}
 
 	void DataCollectorManager:getAllDataFromResource(char resource_id[], DocStream stream) {
@@ -41,8 +49,7 @@ component provides data_collector.DataCollectorManager requires io.Output out,
 
 	CityResourceData getLastDataSentFromResource(char resource_id[]) {
 		MySQL mysql = new MySQL("localhost", 0, "root", "root", "data_collector")
-		char query[] = new char[]("SELECT * FROM data WHERE uuid = \"", resource_id, "\" ORDER BY id_data DESC;")
-		//char query[] = new char[]("SELECT * FROM data WHERE uuid = \"", resource_id, "\" ORDER BY id_data ASC;")
+		char query[] = new char[]("SELECT * FROM data WHERE uuid = \"", resource_id, "\" ORDER BY id_data DESC LIMIT 1;")
 		mysql.execute(query)
 		MySQLRow rows[] = mysql.fetchAll()
 		CityResourceData lastDataFromResource = new CityResourceData()
@@ -54,7 +61,7 @@ component provides data_collector.DataCollectorManager requires io.Output out,
 
 	char[] getAllDataSentFromResource(char resource_id[]) {
 		MySQL mysql = new MySQL("localhost", 0, "root", "root", "data_collector")
-		char query[] = new char[]("SELECT * FROM data WHERE uuid = \"", resource_id, "\" ORDER BY id_data DESC;")
+		char query[] = new char[]("SELECT * FROM data WHERE uuid = \"", resource_id, "\" ORDER BY id_data DESC LIMIT 200;")
 		mysql.execute(query)
 		MySQLRow rows[] = mysql.fetchAll()
 		    char jsonResp[] = encoder.jsonFromArray(rows, null)

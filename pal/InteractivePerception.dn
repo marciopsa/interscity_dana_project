@@ -46,6 +46,7 @@ component provides App requires io.Output out, data.IntUtil iu, io.Input in, dat
 	}
 
 	void commandInterpret(char cmd[]) {
+		int collect_number = 1
 		String cmdList[] = strUtil.explode(cmd, " ")
 		String configsStr[] = null
 		int counter = 0
@@ -60,39 +61,38 @@ component provides App requires io.Output out, data.IntUtil iu, io.Input in, dat
 					out.println("$(debugMSG) $(configsStr[i].string)")
 				}
 			} else if (cmd == CHANGE_TEST) {
+				perception.addProxy("|../pal/monitoring/proxies/DCProxy.o|*(*:Web[0]:*)|")
+				out.println("Press enter to start test...")
+				in.readln()
 				counter = 0
 				perception.getPerceptionData()
-				TextFile resultTestFile = new TextFile("NewResults.data", File.FILE_ACCESS_WRITE)
-				while (counter < 15) {
-					t.sleep(5000)
-					resultTestFile.writeLine(perception.getPerceptionData())
-					//resultTestFile.writeLine(interpretPerceptionData(perception.getPerceptionData()))
-					out.println("Collected $(iu.intToString(counter+1))")
-					counter++
+				TextFile resultTestFile
+				//file[i] = new TextFile(new char[]("HFU_HV_RESULTS/request-file-burst-", iu.intToString(collect_number), ".data"),
+				//File.FILE_ACCESS_WRITE)
+
+				String myConfs[] = perception.getAllConfigs()
+
+				for (int j = 0; j < 100; j++) {
+					resultTestFile = new TextFile(new char[]("results/NewResults", iu.intToString(collect_number), ".data"), File.FILE_ACCESS_WRITE)
+
+					for (int i = 0; i < myConfs.arrayLength; i++) {
+						perception.setConfig(myConfs[i].string)
+						while (counter < 15) {
+							t.sleep(5000)
+							resultTestFile.writeLine(perception.getPerceptionData())
+							out.println("Collected $(iu.intToString(counter+1))")
+							counter++
+						}
+						resultTestFile.writeLine("\n")
+						counter = 0
+					}
+					resultTestFile.close()
+					collect_number++
 				}
-				resultTestFile.close()
-				//perception.addProxy("|../metacom/monitoring/proxies/MetricProxy.o|*(*:HTTPHeader[0]:*)|")
-				//configsStr = perception.getAllConfigs()
-				//counter = 0
-				//TextFile resultTestFile = new TextFile("server_result_test_demo2.data", File.FILE_ACCESS_WRITE)
-				//for (int i = 0; i < configsStr.arrayLength; i++) {
-				//	perception.setConfig(configsStr[i].string)
-				//	counter = 0
-				//	while (counter < 10) {
-				//		t.sleep(5000)
-						//resultTestFile.writeLine(getPrintArch(configsStr[i].string))
-						//resultTestFile.writeLine(interpretPerceptionData(perception.getPerceptionData()))
-						//out.println("$(getPrintArch(configsStr[i].string)))")
-						//out.println("$(interpretPerceptionData(perception.getPerceptionData()))")
-						//sendClientDone()
-						//counter++
-				//	}
-					//out.println("$(debugMSG) ---- end round $(iu.intToString(counter)) ----")
-				//	out.println("$(debugMSG) ---- end round $(iu.intToString(i+1)) ----")
-					//resultTestFile.writeLine("$(debugMSG) ---- end round $(iu.intToString(counter)) ----")
-				//}
-				//sendClientFinish()
-				//resultTestFile.close()
+
+
+
+
 			} else if (cmd == START_TEST) {
 				out.println("$(debugMSG) Starting test")
 				configsStr = perception.getAllConfigs()
