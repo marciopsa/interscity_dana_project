@@ -72,7 +72,7 @@ component provides App requires io.Output out, data.IntUtil iu, io.Input in, dat
 
 				String myConfs[] = perception.getAllConfigs()
 
-				for (int j = 0; j < 100; j++) {
+				for (int j = 0; j < 30; j++) {
 					resultTestFile = new TextFile(new char[]("results/NewResults", iu.intToString(collect_number), ".data"), File.FILE_ACCESS_WRITE)
 
 					for (int i = 0; i < myConfs.arrayLength; i++) {
